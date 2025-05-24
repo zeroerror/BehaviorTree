@@ -1,6 +1,4 @@
-using com.zeroerror.behaviortree.Runtime;
-
-namespace com.zeroerror.behaviortree.Sample
+namespace com.zeroerror.behaviortree.Runtime
 {
     public class IntervalConditionNode : Node
     {
@@ -19,8 +17,6 @@ namespace com.zeroerror.behaviortree.Sample
             time += dt;
             if (time >= interval)
             {
-                var context = _context as SampleContext;
-                context.frame += 1;
                 time -= interval;
                 return NodeStatus.Success;
             }

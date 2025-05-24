@@ -10,10 +10,9 @@ namespace com.zeroerror.behaviortree.EditorTool
     public class BehaviorTreeWindow : EditorWindow
     {
         private List<NodeView> nodeViews = new List<NodeView>();
-        private List<ConnectionData> connections = new List<ConnectionData>();
         private Vector2 offset;
         private Vector2 drag;
-        private NodeView selectedNode = null;
+        private NodeView selectedNodeView = null;
 
         [MenuItem("Tools/Behavior Tree Editor")]
         public static void OpenWindow()
@@ -30,7 +29,7 @@ namespace com.zeroerror.behaviortree.EditorTool
             DrawNodes();
             DrawConnections();
 
-            ProcessEvents(Event.current);
+            ProcessAllEvents(Event.current);
 
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("保存行为树"))
@@ -73,46 +72,55 @@ namespace com.zeroerror.behaviortree.EditorTool
             }
         }
 
-        private void DrawConnections()
-        {
-            // 示例：画贝塞尔曲线连接
-            foreach (var conn in connections)
-            {
-                NodeView from = nodeViews.Find(n => n.nodeData.guid == conn.fromNodeId);
-                NodeView to = nodeViews.Find(n => n.nodeData.guid == conn.toNodeId);
-                if (from != null && to != null)
-                {
-                    Handles.DrawBezier(
-                        from.rect.center, to.rect.center,
-                        from.rect.center + Vector2.right * 50,
-                        to.rect.center + Vector2.left * 50,
-                        Color.white, null, 2f
-                    );
-                }
-            }
-        }
-
-        private void ProcessEvents(Event e)
+        private void ProcessAllEvents(Event e)
         {
             drag = Vector2.zero;
 
             if (e.type == EventType.ContextClick)
             {
                 Vector2 mousePos = e.mousePosition;
-                selectedNode = null;
+                selectedNodeView = null;
                 foreach (var node in nodeViews)
                 {
                     if (node.rect.Contains(mousePos))
                     {
-                        selectedNode = node;
+                        selectedNodeView = node;
                         break;
                     }
                 }
 
                 GenericMenu menu = new GenericMenu();
-                if (selectedNode != null)
+                if (selectedNodeView != null)
                 {
-                    menu.AddItem(new GUIContent("删除节点"), false, () => DeleteNode(selectedNode));
+                    menu.AddItem(new GUIContent("删除节点"), false, () => DeleteNode(selectedNodeView));
+                    menu.AddItem(new GUIContent("创建连线"), false, () =>
+                    {
+                        connectMode = ConnectMode.SelectingTo;
+                        connectFromNode = selectedNodeView;
+                    });
+
+                    // 显示所有装饰节点 todo
+                    menu.AddItem(new GUIContent("添加装饰节点/Delay"), false, () =>
+                    {
+                        var decoratorView = new DelayNodeView();
+                        decoratorView.nodeData.InitGUID();
+                        decoratorView.SetPosition(e.mousePosition);
+                        var decoratorNodeData = decoratorView.nodeData as DecoratorNodeData;
+                        decoratorNodeData.childGuid = selectedNodeView.nodeData.guid; // 连接到被装饰节点
+                        decoratorView.childView = selectedNodeView; // 连接到被装饰节点
+                        // 插入到selectedNodeView之前 
+                        int index = nodeViews.IndexOf(selectedNodeView);
+                        if (index >= 0) nodeViews.Insert(index, decoratorView);
+                        // 更新所有父节点：指向decorator.guid，而不是B
+                        foreach (var conn in connections)
+                        {
+                            if (conn.toNodeId == selectedNodeView.nodeData.guid)
+                                conn.toNodeId = decoratorView.nodeData.guid;
+                        }
+                        // 如果B是根节点，记得把根节点指向decorator
+                        // ...
+                    });
+
                 }
                 else
                 {
@@ -131,39 +139,29 @@ namespace com.zeroerror.behaviortree.EditorTool
                 e.Use();
             }
 
-            switch (e.type)
-            {
-                case EventType.MouseDrag:
-                    if (e.button == 0)
-                    {
-                        OnDrag(e.delta);
-                    }
-                    break;
-            }
+            this._ProcessConnectEvents(e);
+            this._ProcessDragEvents(e);
         }
 
-        private void OnDrag(Vector2 delta)
+        private void DeleteNode(NodeView view)
         {
-            drag = delta;
+            // 1. 先找到所有以view为childView的装饰节点
+            List<NodeView> decoratorToDelete = new List<NodeView>();
             foreach (var node in nodeViews)
             {
-                node.Drag(delta);
+                if (node is DecoratorNodeView decorator && decorator.childView == view)
+                {
+                    decoratorToDelete.Add(decorator);
+                }
             }
-            GUI.changed = true;
-        }
-
-        private void DeleteNode(NodeView node)
-        {
-            nodeViews.Remove(node);
-            // 同步移除相关连接
-            connections.RemoveAll(c => c.fromNodeId == node.nodeData.guid || c.toNodeId == node.nodeData.guid);
-        }
-
-        private List<ConnectionData> BuildConnectionData()
-        {
-            // 如果你的connections已经是ConnectionData列表，这里直接return connections;
-            // 如果用的是自定义Connection类，需要转换为ConnectionData
-            return new List<ConnectionData>(connections);
+            // 2. 递归删除所有相关装饰节点
+            foreach (var decorator in decoratorToDelete)
+            {
+                DeleteNode(decorator);
+            }
+            // 3. 移除自身和所有连接
+            nodeViews.Remove(view);
+            connections.RemoveAll(c => c.fromNodeId == view.nodeData.guid || c.toNodeId == view.nodeData.guid);
         }
 
         private void SaveTree()
@@ -208,8 +206,218 @@ namespace com.zeroerror.behaviortree.EditorTool
                 nodeView.ImportData(nodeData.Clone());
                 nodeViews.Add(nodeView);
             }
+
+            // 刷新 decoratorView 的 childView
+            foreach (var nodeView in nodeViews)
+            {
+                if (nodeView is DecoratorNodeView decoratorView)
+                {
+                    var childNode = nodeViews.Find(n =>
+                    {
+                        var decoratorData = decoratorView.nodeData as DecoratorNodeData;
+                        return n.nodeData.guid == decoratorData.childGuid;
+                    });
+                    if (childNode != null)
+                    {
+                        decoratorView.childView = childNode;
+                    }
+                }
+            }
+
             connections = new List<ConnectionData>(asset.connections);
             Debug.Log("行为树已加载: " + path);
         }
+
+        public NodeView GetNodeViewByGuid(string guid)
+        {
+            foreach (var node in nodeViews)
+            {
+                if (node.nodeData.guid == guid)
+                    return node;
+            }
+            return null;
+        }
+
+        #region [Connect]
+
+        private List<ConnectionData> connections = new List<ConnectionData>();
+        // 用于记录连线创建状态
+        private enum ConnectMode { None, SelectingFrom, SelectingTo }
+        private ConnectMode connectMode = ConnectMode.None;
+        private NodeView connectFromNode = null;
+
+        private List<ConnectionData> BuildConnectionData()
+        {
+            // 如果你的connections已经是ConnectionData列表，这里直接return connections;
+            // 如果用的是自定义Connection类，需要转换为ConnectionData
+            return new List<ConnectionData>(connections);
+        }
+
+        private void _ProcessConnectEvents(Event e)
+        {
+            // 鼠标拖动时画临时贝塞尔线
+            if (connectMode == ConnectMode.SelectingTo && connectFromNode != null)
+            {
+                Handles.DrawBezier(
+                    connectFromNode.rect.center,
+                    Event.current.mousePosition,
+                    connectFromNode.rect.center + Vector2.right * 50,
+                    Event.current.mousePosition + Vector2.left * 50,
+                    Color.yellow, null, 2f
+                );
+                GUI.changed = true;
+            }
+
+            // 鼠标点击目标节点时完成连线
+            if (connectMode == ConnectMode.SelectingTo && Event.current.type == EventType.MouseDown && Event.current.button == 0)
+            {
+                Vector2 mousePos = Event.current.mousePosition;
+                NodeView toNode = null;
+                foreach (var node in nodeViews)
+                {
+                    if (node.rect.Contains(mousePos) && node != connectFromNode)
+                    {
+                        toNode = node;
+                        break;
+                    }
+                }
+                if (toNode != null)
+                {
+                    // 创建连线
+                    connections.Add(new ConnectionData
+                    {
+                        fromNodeId = connectFromNode.nodeData.guid,
+                        toNodeId = toNode.nodeData.guid
+                    });
+                    connectMode = ConnectMode.None;
+                    connectFromNode = null;
+                    Event.current.Use();
+                    GUI.changed = true;
+                }
+                else if (!IsMouseOverAnyNode(mousePos))
+                {
+                    // 点击空白区，取消连线
+                    connectMode = ConnectMode.None;
+                    connectFromNode = null;
+                    Event.current.Use();
+                    GUI.changed = true;
+                }
+            }
+
+            // 支持ESC键取消连线
+            if (connectMode == ConnectMode.SelectingTo && Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Escape)
+            {
+                connectMode = ConnectMode.None;
+                connectFromNode = null;
+                Event.current.Use();
+            }
+        }
+
+        private bool IsMouseOverAnyNode(Vector2 mousePos)
+        {
+            foreach (var node in nodeViews)
+            {
+                if (node.rect.Contains(mousePos))
+                    return true;
+            }
+            return false;
+        }
+
+        private void DrawConnections()
+        {
+            foreach (var conn in connections)
+            {
+                NodeView from = nodeViews.Find(n => n.nodeData.guid == conn.fromNodeId);
+                NodeView to = nodeViews.Find(n => n.nodeData.guid == conn.toNodeId);
+                if (from != null && to != null)
+                {
+                    Vector2 fromCenter = from.rect.center;
+                    Vector2 toCenter = to.rect.center;
+                    Vector2 dir = (toCenter - fromCenter).normalized;
+
+                    // 计算起点/终点：矩形中心往目标方向投射到边上
+                    Vector2 fromEdge = GetRectEdgePoint(from.rect, dir);
+                    Vector2 toEdge = GetRectEdgePoint(to.rect, -dir);
+
+                    Handles.color = Color.white;
+                    Handles.DrawLine(fromEdge, toEdge);
+                    Handles.color = Color.white; // 恢复颜色（可选）
+                    DrawArrow(toEdge, dir, 16, 22, Color.white);
+                }
+            }
+        }
+
+        // 计算rect边缘最近点（direction为起点指向终点的方向）
+        private Vector2 GetRectEdgePoint(Rect rect, Vector2 direction)
+        {
+            Vector2 center = rect.center;
+            float hw = rect.width / 2f;
+            float hh = rect.height / 2f;
+            float dx = direction.x;
+            float dy = direction.y;
+
+            // 计算与哪个边的交点最近
+            float px = dx == 0 ? 0 : hw / Mathf.Abs(dx);
+            float py = dy == 0 ? 0 : hh / Mathf.Abs(dy);
+            float t = Mathf.Min(px, py);
+
+            return center + direction * t;
+        }
+
+        // 在point点，沿dir方向画一个箭头
+        private void DrawArrow(Vector2 point, Vector2 dir, float arrowLength, float arrowAngle, Color color)
+        {
+            Vector2 right = Quaternion.Euler(0, 0, arrowAngle) * -dir * arrowLength;
+            Vector2 left = Quaternion.Euler(0, 0, -arrowAngle) * -dir * arrowLength;
+
+            Handles.color = color;
+            Handles.DrawAAPolyLine(3f, point, point + right);
+            Handles.DrawAAPolyLine(3f, point, point + left);
+            Handles.color = Color.white;
+        }
+
+        #endregion
+
+        #region [Drag]
+
+        private NodeView draggingNode = null;
+        private Vector2 dragOffset = Vector2.zero;
+
+        private void _ProcessDragEvents(Event e)
+        {
+            drag = Vector2.zero;
+            Vector2 mousePos = e.mousePosition;
+
+            // 节点拖拽
+            if (e.type == EventType.MouseDown && e.button == 0)
+            {
+                foreach (var node in nodeViews)
+                {
+                    if (node.rect.Contains(mousePos))
+                    {
+                        draggingNode = node;
+                        dragOffset = mousePos - node.rect.position;
+                        GUI.FocusControl(null); // 防止控件被选中
+                        e.Use();
+                        break;
+                    }
+                }
+            }
+
+            if (e.type == EventType.MouseDrag && e.button == 0 && draggingNode != null)
+            {
+                draggingNode.SetPosition(mousePos - dragOffset);
+                GUI.changed = true;
+                e.Use();
+            }
+
+            if (e.type == EventType.MouseUp && e.button == 0 && draggingNode != null)
+            {
+                draggingNode = null;
+                e.Use();
+            }
+        }
+
+        #endregion
     }
 }

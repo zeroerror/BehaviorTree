@@ -6,13 +6,14 @@ namespace com.zeroerror.behaviortree.EditorTool
 {
     public abstract class NodeView
     {
-        protected Color _bgColor = new Color(0.2f, 0.2f, 0.2f, 1);
+        public NodeData nodeData; // 逻辑节点
 
+        protected BehaviorTreeWindow window; // 关联的行为树窗口
+        protected virtual Color contentColor => new Color(1, 1, 1, 1); // 内容颜色
+        protected virtual Color bgColor => new Color(35, 35, 35, 255) / 255.0f; // 背景颜色
         protected Rect _rect = new Rect(0, 0, 200, 100);
         public Rect rect => _rect;
-
         public string title;
-        public NodeData nodeData; // 逻辑节点
 
         public NodeView()
         {
@@ -34,15 +35,18 @@ namespace com.zeroerror.behaviortree.EditorTool
         }
 
         // 派生类重写以自定义显示内容
-        public void Draw()
+        public virtual void Draw()
         {
-            GUI.color = this._bgColor;
-            GUI.Box(rect, "");
-            GUI.color = Color.white;
+            var contentColor = GUI.contentColor;
+            GUI.contentColor = this.contentColor;
+
+            EditorGUI.DrawRect(rect, this.bgColor);
             GUILayout.BeginArea(rect);
             GUILayout.Label(title, EditorStyles.boldLabel);
             _Draw();
             GUILayout.EndArea();
+
+            GUI.contentColor = contentColor;
         }
         protected abstract void _Draw();
 

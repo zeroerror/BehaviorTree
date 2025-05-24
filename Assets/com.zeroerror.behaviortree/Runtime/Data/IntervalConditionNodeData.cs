@@ -1,3 +1,5 @@
+using com.zeroerror.behaviortree.Sample;
+
 namespace com.zeroerror.behaviortree.Runtime
 {
     [System.Serializable]
@@ -16,6 +18,12 @@ namespace com.zeroerror.behaviortree.Runtime
             nodeData.CopyFrom(this);
             nodeData.interval = this.interval;
             return nodeData;
+        }
+
+        public override Node ToNode()
+        {
+            var node = new IntervalConditionNode(this.interval);
+            return node;
         }
     }
 }

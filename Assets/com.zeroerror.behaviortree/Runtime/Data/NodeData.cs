@@ -34,5 +34,8 @@ namespace com.zeroerror.behaviortree.Runtime
                 this.guid = System.Guid.NewGuid().ToString();
             }
         }
+
+        // 将节点数据转换为逻辑节点
+        public abstract Node ToNode();
     }
 }
