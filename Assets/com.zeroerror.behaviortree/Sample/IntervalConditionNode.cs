@@ -2,13 +2,14 @@ using com.zeroerror.behaviortree.Runtime;
 
 namespace com.zeroerror.behaviortree.Sample
 {
-    public class SampleConditionNode_Interval : Node
+    public class IntervalConditionNode : Node
     {
         private float time;
         public override string Name => "条件节点 - 间隔时间";
 
-        private readonly float interval;
-        public SampleConditionNode_Interval(float interval)
+        public float interval;
+
+        public IntervalConditionNode(float interval)
         {
             this.interval = interval;
         }

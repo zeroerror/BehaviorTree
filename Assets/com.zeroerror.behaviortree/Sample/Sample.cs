@@ -12,8 +12,8 @@ namespace com.zeroerror.behaviortree.Sample
             // 创建顺序节点
             var sequenceNode = new SequenceNode();
             // 创建条件节点、行为节点 并添加到顺序节点
-            var conditionNode = new SampleConditionNode_Interval(1f);
-            var actionNode = new SampleActionNode_Log();
+            var conditionNode = new IntervalConditionNode(1f);
+            var actionNode = new LogActionNode();
             sequenceNode.AddChild(conditionNode);
             sequenceNode.AddChild(actionNode);
             // 创建装饰器节点 (3s延迟) 装饰顺序节点

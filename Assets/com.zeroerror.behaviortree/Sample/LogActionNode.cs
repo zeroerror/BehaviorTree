@@ -2,7 +2,7 @@ using com.zeroerror.behaviortree.Runtime;
 
 namespace com.zeroerror.behaviortree.Sample
 {
-    public class SampleActionNode_Log : Node
+    public class LogActionNode : Node
     {
         public override string Name => "行为节点 - 日志打印";
 
