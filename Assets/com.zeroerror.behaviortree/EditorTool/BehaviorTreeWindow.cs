@@ -70,6 +70,29 @@ namespace com.zeroerror.behaviortree.EditorTool
             {
                 node.Draw();
             }
+            DrawOutline(draggingNode);
+            DrawOutline(connectFromNode);
+        }
+
+        private void DrawOutline(NodeView view)
+        {
+            // 选中节点红色描边
+            if (view != null)
+            {
+                // 加粗一点（可选），你可以自定义outline宽度
+                Rect r = view.rect;
+                // 可适当扩大一点边框
+                r.xMin -= 2; r.yMin -= 2; r.xMax += 2; r.yMax += 2;
+                Handles.color = Color.red;
+                Handles.DrawAAPolyLine(4,
+                    new Vector3(r.xMin, r.yMin),
+                    new Vector3(r.xMax, r.yMin),
+                    new Vector3(r.xMax, r.yMax),
+                    new Vector3(r.xMin, r.yMax),
+                    new Vector3(r.xMin, r.yMin)
+                );
+                Handles.color = Color.white;
+            }
         }
 
         private void ProcessAllEvents(Event e)
@@ -80,8 +103,9 @@ namespace com.zeroerror.behaviortree.EditorTool
             {
                 Vector2 mousePos = e.mousePosition;
                 selectedNodeView = null;
-                foreach (var node in nodeViews)
+                for (int i = nodeViews.Count - 1; i >= 0; i--)
                 {
+                    var node = nodeViews[i];
                     if (node.rect.Contains(mousePos))
                     {
                         selectedNodeView = node;
@@ -273,8 +297,9 @@ namespace com.zeroerror.behaviortree.EditorTool
             {
                 Vector2 mousePos = Event.current.mousePosition;
                 NodeView toNode = null;
-                foreach (var node in nodeViews)
+                for (int i = nodeViews.Count - 1; i >= 0; i--)
                 {
+                    var node = nodeViews[i];
                     if (node.rect.Contains(mousePos) && node != connectFromNode)
                     {
                         toNode = node;
@@ -315,10 +340,10 @@ namespace com.zeroerror.behaviortree.EditorTool
 
         private bool IsMouseOverAnyNode(Vector2 mousePos)
         {
-            foreach (var node in nodeViews)
+            for (int i = nodeViews.Count - 1; i >= 0; i--)
             {
-                if (node.rect.Contains(mousePos))
-                    return true;
+                var node = nodeViews[i];
+                if (node.rect.Contains(mousePos)) return true;
             }
             return false;
         }
@@ -391,8 +416,9 @@ namespace com.zeroerror.behaviortree.EditorTool
             // 节点拖拽
             if (e.type == EventType.MouseDown && e.button == 0)
             {
-                foreach (var node in nodeViews)
+                for (int i = nodeViews.Count - 1; i >= 0; i--)
                 {
+                    var node = nodeViews[i];
                     if (node.rect.Contains(mousePos))
                     {
                         draggingNode = node;

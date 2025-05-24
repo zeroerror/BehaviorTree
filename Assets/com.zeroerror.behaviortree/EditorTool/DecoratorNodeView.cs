@@ -14,6 +14,7 @@ namespace com.zeroerror.behaviortree.EditorTool
         {
             this._rect = childView.rect;
             this._rect.height += contentHeight;
+            this._rect.x -= 10;
             this._rect.y -= contentHeight;
             EditorGUI.DrawRect(this._rect, this.bgColor);
 
