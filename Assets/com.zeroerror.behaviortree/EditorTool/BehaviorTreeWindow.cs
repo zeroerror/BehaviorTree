@@ -575,7 +575,6 @@ namespace com.zeroerror.behaviortree.EditorTool
                     totalByteCount += System.Text.Encoding.UTF8.GetByteCount(snapshot);
                 }
                 var totalMB = totalByteCount / 1024f / 1024f;
-                Debug.Log($"UndoStack 总大小: {totalMB:F2}MB");
                 if (totalMB > 10)
                 {
                     // 1. 拷贝到数组（栈顶在数组0号位，栈底在最后一个）
@@ -587,8 +586,7 @@ namespace com.zeroerror.behaviortree.EditorTool
                     {
                         newStack.Push(arr[i]);
                     }
-                    undoStack = newStack; // 替换
-                    Debug.Log($"UndoStack 超过100MB，已保留最近的 {keepCount} 个快照，栈大小: {keepCount}");
+                    undoStack = newStack;
                 }
             }
         }
