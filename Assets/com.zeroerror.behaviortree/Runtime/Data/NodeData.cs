@@ -27,8 +27,14 @@ namespace com.zeroerror.behaviortree.Runtime
             this.viewType = data.viewType;
         }
 
-        public virtual void InitGUID()
+        public virtual void InitGUID(bool forceRegenerate = false)
         {
+            if (forceRegenerate)
+            {
+                this.guid = System.Guid.NewGuid().ToString();
+                return;
+            }
+
             if (string.IsNullOrEmpty(this.guid))
             {
                 this.guid = System.Guid.NewGuid().ToString();

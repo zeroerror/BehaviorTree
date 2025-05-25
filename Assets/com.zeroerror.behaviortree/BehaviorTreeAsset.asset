@@ -13,76 +13,122 @@ MonoBehaviour:
   m_Name: BehaviorTreeAsset
   m_EditorClassIdentifier: 
   entryNodeData:
-    rid: 5371023612390408250
+    rid: 5371023615337168923
   nodeDatas:
-  - rid: 5371023612390408251
-  - rid: 5371023612390408252
-  - rid: 5371023612390408253
-  - rid: 5371023612390408254
-  - rid: 5371023612390408255
+  - rid: 5371023615337168924
+  - rid: 5371023615337168925
+  - rid: 5371023615337168926
+  - rid: 5371023615337168927
+  - rid: 5371023615337168928
+  - rid: 5371023615337168929
+  - rid: 5371023615337168930
+  - rid: 5371023615337168931
   connections:
   - fromNodeId: e39e00ab-02fe-49c3-8333-366e31c4f5ff
     toNodeId: 12041d0f-ba98-46f6-978b-04daecdd21ee
+    isHold: 0
   - fromNodeId: bb4e7dd9-55cd-4f30-9411-498c3855dde2
     toNodeId: e5e93a13-0ce3-49b2-a06b-c017ecad3ce9
-  - fromNodeId: e5e93a13-0ce3-49b2-a06b-c017ecad3ce9
-    toNodeId: 723c2752-ef83-4cdd-8bf6-ad25099901e8
-  - fromNodeId: 402f3416-c88c-41c5-b8a1-a44a9f00a144
-    toNodeId: 3f8ed238-c9db-46b0-bf18-720c42c5214b
+    isHold: 0
   - fromNodeId: 3f8ed238-c9db-46b0-bf18-720c42c5214b
     toNodeId: bb4e7dd9-55cd-4f30-9411-498c3855dde2
+    isHold: 0
+  - fromNodeId: bff8aa12-ff84-46d0-947a-dd93a2d05ee7
+    toNodeId: 3f8ed238-c9db-46b0-bf18-720c42c5214b
+    isHold: 1
+  - fromNodeId: bff8aa12-ff84-46d0-947a-dd93a2d05ee7
+    toNodeId: 3e89ceba-154a-4ec9-b4f7-dbd2bb619868
+    isHold: 1
+  - fromNodeId: 3e89ceba-154a-4ec9-b4f7-dbd2bb619868
+    toNodeId: 40fb95d1-08e9-46e4-9d3e-0dc603c354d7
+    isHold: 0
+  - fromNodeId: 40fb95d1-08e9-46e4-9d3e-0dc603c354d7
+    toNodeId: fc662095-473d-4f6b-a6bf-aa76bb49bd2c
+    isHold: 0
+  - fromNodeId: 402f3416-c88c-41c5-b8a1-a44a9f00a144
+    toNodeId: bff8aa12-ff84-46d0-947a-dd93a2d05ee7
+    isHold: 0
   references:
     version: 2
     RefIds:
-    - rid: 5371023612390408250
+    - rid: 5371023615337168923
       type: {class: EntryNodeData, ns: com.zeroerror.behaviortree.Runtime, asm: Assembly-CSharp}
       data:
         nodeName: "\u5165\u53E3\u8282\u70B9"
         guid: 402f3416-c88c-41c5-b8a1-a44a9f00a144
-        position: {x: 458, y: 147}
+        position: {x: 578, y: 50}
         viewType: com.zeroerror.behaviortree.EditorTool.EntryNodeView, Assembly-CSharp,
           Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    - rid: 5371023612390408251
+    - rid: 5371023615337168924
       type: {class: LogActionNodeData, ns: com.zeroerror.behaviortree.Sample, asm: Assembly-CSharp}
       data:
         nodeName: "\u65E5\u5FD7\u8282\u70B9"
         guid: e5e93a13-0ce3-49b2-a06b-c017ecad3ce9
-        position: {x: 449, y: 533}
+        position: {x: 417, y: 637}
         viewType: com.zeroerror.behaviortree.Sample.EditorTool.LogActionNodeView,
           Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-        message: hello
-    - rid: 5371023612390408252
+        message: "\u95F4\u96942\u79D2"
+    - rid: 5371023615337168925
       type: {class: DelayNodeData, ns: com.zeroerror.behaviortree.Runtime, asm: Assembly-CSharp}
       data:
         nodeName: "\u5EF6\u8FDF\u65F6\u95F4"
         guid: 3f8ed238-c9db-46b0-bf18-720c42c5214b
-        position: {x: 457, y: 276}
+        position: {x: 400, y: 307}
         viewType: com.zeroerror.behaviortree.EditorTool.DelayNodeView, Assembly-CSharp,
           Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+        holdGuid: 
         delayTime: 3
-    - rid: 5371023612390408253
+    - rid: 5371023615337168926
       type: {class: IntervalConditionNodeData, ns: com.zeroerror.behaviortree.Runtime, asm: Assembly-CSharp}
       data:
         nodeName: "\u95F4\u9694\u65F6\u95F4"
         guid: bb4e7dd9-55cd-4f30-9411-498c3855dde2
-        position: {x: 450, y: 401}
+        position: {x: 412, y: 487}
         viewType: com.zeroerror.behaviortree.EditorTool.IntervalConditionNodeView,
           Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-        interval: 0.5
-    - rid: 5371023612390408254
-      type: {class: LogActionNodeData, ns: com.zeroerror.behaviortree.Sample, asm: Assembly-CSharp}
-      data:
-        nodeName: "\u65E5\u5FD7\u8282\u70B9"
-        guid: 723c2752-ef83-4cdd-8bf6-ad25099901e8
-        position: {x: 457, y: 670}
-        viewType: com.zeroerror.behaviortree.Sample.EditorTool.LogActionNodeView,
-          Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-        message: world
-    - rid: 5371023612390408255
+        interval: 2
+    - rid: 5371023615337168927
       type: {class: EntryNodeData, ns: com.zeroerror.behaviortree.Runtime, asm: Assembly-CSharp}
       data:
         nodeName: "\u5165\u53E3\u8282\u70B9"
         guid: 402f3416-c88c-41c5-b8a1-a44a9f00a144
-        position: {x: 458, y: 147}
+        position: {x: 578, y: 50}
         viewType: com.zeroerror.behaviortree.EditorTool.EntryNodeView, Assembly-CSharp,
           Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    - rid: 5371023615337168928
+      type: {class: SequenceNodeData, ns: com.zeroerror.behaviortree.Runtime, asm: Assembly-CSharp}
+      data:
+        nodeName: "\u590D\u5408\u8282\u70B9 - \u987A\u5E8F\u6267\u884C"
+        guid: bff8aa12-ff84-46d0-947a-dd93a2d05ee7
+        position: {x: 585, y: 181}
+        viewType: com.zeroerror.behaviortree.EditorTool.SequenceNodeView, Assembly-CSharp,
+          Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+        holdGuids: []
+    - rid: 5371023615337168929
+      type: {class: IntervalConditionNodeData, ns: com.zeroerror.behaviortree.Runtime, asm: Assembly-CSharp}
+      data:
+        nodeName: "\u95F4\u9694\u65F6\u95F4"
+        guid: 40fb95d1-08e9-46e4-9d3e-0dc603c354d7
+        position: {x: 719, y: 493}
+        viewType: com.zeroerror.behaviortree.EditorTool.IntervalConditionNodeView,
+          Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+        interval: 0.1
+    - rid: 5371023615337168930
+      type: {class: LogActionNodeData, ns: com.zeroerror.behaviortree.Sample, asm: Assembly-CSharp}
+      data:
+        nodeName: "\u65E5\u5FD7\u8282\u70B9"
+        guid: fc662095-473d-4f6b-a6bf-aa76bb49bd2c
+        position: {x: 721, y: 637}
+        viewType: com.zeroerror.behaviortree.Sample.EditorTool.LogActionNodeView,
+          Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+        message: "\u95F4\u96940.1\u79D2"
+    - rid: 5371023615337168931
+      type: {class: DelayNodeData, ns: com.zeroerror.behaviortree.Runtime, asm: Assembly-CSharp}
+      data:
+        nodeName: "\u5EF6\u8FDF\u65F6\u95F4"
+        guid: 3e89ceba-154a-4ec9-b4f7-dbd2bb619868
+        position: {x: 720, y: 325}
+        viewType: com.zeroerror.behaviortree.EditorTool.DelayNodeView, Assembly-CSharp,
+          Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+        holdGuid: 
+        delayTime: 5

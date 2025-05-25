@@ -11,7 +11,7 @@ namespace com.zeroerror.behaviortree.Sample
             this.message = message;
         }
 
-        protected override NodeStatus M_Tick(float dt)
+        protected override NodeStatus _Tick(float dt)
         {
             UnityEngine.Debug.Log(message);
             return NodeStatus.Success;

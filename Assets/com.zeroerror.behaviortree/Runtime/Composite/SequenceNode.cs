@@ -6,18 +6,18 @@ namespace com.zeroerror.behaviortree.Runtime
 
         protected override void _Reset()
         {
-            foreach (var child in children)
+            foreach (var child in holds)
                 child.Reset();
         }
 
         protected override NodeStatus _Tick(float dt)
         {
-            for (int i = 0; i < children.Count; i++)
+            for (int i = 0; i < holds.Count; i++)
             {
-                var status = children[i].Tick(dt);
+                var status = holds[i].Tick(dt);
                 if (status == NodeStatus.Failure || status == NodeStatus.Running)
                 {
-                    for (int j = i + 1; j < children.Count; j++) children[j].Reset();
+                    for (int j = i + 1; j < holds.Count; j++) holds[j].Reset();
                     return status;
                 }
             }

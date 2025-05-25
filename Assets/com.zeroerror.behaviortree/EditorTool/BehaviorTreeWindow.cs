@@ -132,16 +132,52 @@ namespace com.zeroerror.behaviortree.EditorTool
                 GenericMenu menu = new GenericMenu();
                 if (selectedNodeView != null)
                 {
+                    // 删除节点
                     menu.AddItem(new GUIContent("删除节点"), false, () => DeleteNode(selectedNodeView));
-                    var hasConnectedNext = connections.Exists(c => c.fromNodeId == selectedNodeView.nodeData.guid);
-                    if (!hasConnectedNext || selectedNodeView is CompositeNodeView)
+                    // 删除输入端口
+                    var hasInputPort = connections.Exists(c => c.toNodeId == selectedNodeView.nodeData.guid);
+                    if (hasInputPort)
+                        menu.AddItem(new GUIContent("删除输入端口"), false, () =>
+                        {
+                            this.connections.RemoveAll(c => c.toNodeId == selectedNodeView.nodeData.guid);
+                        });
+                    // 删除输出端口
+                    var hasOutputPort = connections.Exists(c => c.fromNodeId == selectedNodeView.nodeData.guid);
+                    if (hasOutputPort)
+                        menu.AddItem(new GUIContent("删除输出端口"), false, () =>
+                        {
+                            this.connections.RemoveAll(c => c.fromNodeId == selectedNodeView.nodeData.guid);
+                        });
+                    // 设置输出端口
+                    if (!hasOutputPort)
                     {
-                        menu.AddItem(new GUIContent("创建连线"), false, () =>
+                        menu.AddItem(new GUIContent("设置输出端口"), false, () =>
                         {
                             connectMode = ConnectMode.SelectingTo;
                             connectFromNode = selectedNodeView;
+                            isConnectToHold = false;
                         });
                     }
+                    // 添加持有节点
+                    var canAddHold = selectedNodeView is CompositeNodeView;
+                    if (canAddHold)
+                    {
+                        menu.AddItem(new GUIContent("添加持有节点"), false, () =>
+                        {
+                            connectMode = ConnectMode.SelectingTo;
+                            connectFromNode = selectedNodeView;
+                            isConnectToHold = true;
+                        });
+                    }
+                    // 拷贝节点
+                    menu.AddItem(new GUIContent("拷贝节点"), false, () =>
+                    {
+                        var nodeData = selectedNodeView.ExportData();
+                        string dataType = nodeData.GetType().AssemblyQualifiedName;
+                        string viewType = nodeData.viewType; // 已有
+                        string json = JsonUtility.ToJson(nodeData);
+                        EditorGUIUtility.systemCopyBuffer = $"NODE_COPY_:{dataType}|{viewType}|{json}";
+                    });
                 }
                 else
                 {
@@ -154,6 +190,43 @@ namespace com.zeroerror.behaviortree.EditorTool
                             nodeView.SetPosition(e.mousePosition);
                             nodeViews.Add(nodeView);
                         });
+                    }
+                    // 粘贴节点
+                    if (!string.IsNullOrEmpty(EditorGUIUtility.systemCopyBuffer))
+                    {
+                        if (EditorGUIUtility.systemCopyBuffer.StartsWith("NODE_COPY_:"))
+                            menu.AddItem(new GUIContent("粘贴节点"), false, () =>
+                            {
+                                string str = EditorGUIUtility.systemCopyBuffer.Substring("NODE_COPY_:".Length);
+                                int sep1 = str.IndexOf('|');
+                                int sep2 = str.IndexOf('|', sep1 + 1);
+                                if (sep1 > 0 && sep2 > sep1)
+                                {
+                                    string dataType = str.Substring(0, sep1);
+                                    string viewType = str.Substring(sep1 + 1, sep2 - sep1 - 1);
+                                    string json = str.Substring(sep2 + 1);
+
+                                    Type nodeDataType = Type.GetType(dataType);
+                                    if (nodeDataType == null)
+                                    {
+                                        Debug.LogError("无法找到节点数据类型: " + dataType);
+                                        return;
+                                    }
+                                    var nodeData = (NodeData)JsonUtility.FromJson(json, nodeDataType);
+
+                                    Type nodeViewType = Type.GetType(viewType);
+                                    if (nodeViewType == null)
+                                    {
+                                        Debug.LogError("无法找到节点视图类型: " + viewType);
+                                        return;
+                                    }
+                                    var nodeView = (NodeView)Activator.CreateInstance(nodeViewType);
+                                    nodeView.nodeData = nodeData;
+                                    nodeView.nodeData.InitGUID(true);
+                                    nodeView.SetPosition(e.mousePosition);
+                                    nodeViews.Add(nodeView);
+                                }
+                            });
                     }
                 }
                 menu.ShowAsContext();
@@ -236,6 +309,7 @@ namespace com.zeroerror.behaviortree.EditorTool
         private enum ConnectMode { None, SelectingFrom, SelectingTo }
         private ConnectMode connectMode = ConnectMode.None;
         private NodeView connectFromNode = null;
+        private bool isConnectToHold = false;
 
         private List<ConnectionData> BuildConnectionData()
         {
@@ -279,15 +353,9 @@ namespace com.zeroerror.behaviortree.EditorTool
                     connections.Add(new ConnectionData
                     {
                         fromNodeId = connectFromNode.nodeData.guid,
-                        toNodeId = toNode.nodeData.guid
+                        toNodeId = toNode.nodeData.guid,
+                        isHold = isConnectToHold
                     });
-                    // 复合节点除了连线外，还要额外在节点内记录子节点guid
-                    if (connectFromNode is CompositeNodeView)
-                    {
-                        var compositeNodeData = connectFromNode.nodeData as CompositeNodeData;
-                        compositeNodeData.childGuids.Add(toNode.nodeData.guid);
-                    }
-
                     connectMode = ConnectMode.None;
                     connectFromNode = null;
                     Event.current.Use();
@@ -342,7 +410,7 @@ namespace com.zeroerror.behaviortree.EditorTool
                     Vector2 fromEdge = GetRectEdgePoint(from.rect, dir);
                     Vector2 toEdge = GetRectEdgePoint(to.rect, -dir);
 
-                    Handles.color = Color.white;
+                    Handles.color = conn.isHold ? Color.blue : Color.white;
                     Handles.DrawLine(fromEdge, toEdge);
                     Handles.color = Color.white; // 恢复颜色（可选）
                     DrawArrow(toEdge, dir, 16, 22, Color.white);

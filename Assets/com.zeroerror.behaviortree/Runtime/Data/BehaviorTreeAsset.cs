@@ -29,7 +29,21 @@ namespace com.zeroerror.behaviortree.Runtime
                 if (nodeDict.TryGetValue(connection.fromNodeId, out var fromNode) &&
                     nodeDict.TryGetValue(connection.toNodeId, out var toNode))
                 {
-                    fromNode.AddChild(toNode);
+                    if (!connection.isHold)
+                    {
+                        fromNode.SetChild(toNode);
+                    }
+                    else
+                    {
+                        if (fromNode is CompositeNode compositeNode)
+                        {
+                            compositeNode.AddHold(toNode);
+                        }
+                        else if (fromNode is DecoratorNode decoratorNode)
+                        {
+                            decoratorNode.SetHold(toNode);
+                        }
+                    }
                 }
             }
 

@@ -4,17 +4,20 @@ namespace com.zeroerror.behaviortree.Runtime
 {
     public abstract class CompositeNode : Node
     {
-        protected List<Node> children = new List<Node>();
-        public override void AddChild(Node child) => children.Add(child);
-
-        public Node child;
+        protected List<Node> holds = new List<Node>();
 
         public override void InjectContext(object context)
         {
-            foreach (var child in children)
+            base.InjectContext(context);
+            foreach (var n in holds)
             {
-                child.InjectContext(context);
+                n.InjectContext(context);
             }
+        }
+
+        public void AddHold(Node node)
+        {
+            holds.Add(node);
         }
     }
 }

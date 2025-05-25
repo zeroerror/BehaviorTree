@@ -18,7 +18,7 @@ namespace com.zeroerror.behaviortree.Runtime
             elapsedTime += dt;
             if (elapsedTime >= delayTime)
             {
-                this.child.Tick(dt);
+                this.hold?.Tick(dt);
                 return NodeStatus.Success;
             }
             return NodeStatus.Running;

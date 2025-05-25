@@ -7,7 +7,7 @@ namespace com.zeroerror.behaviortree.Runtime
 
         public IntervalConditionNodeData() : base()
         {
-            this.nodeName = "条件节点 - 延迟时间";
+            this.nodeName = "条件节点 - 间隔时间";
         }
 
         public override NodeData Clone()

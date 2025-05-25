@@ -21,6 +21,7 @@ namespace com.zeroerror.behaviortree.Runtime
         public virtual void InjectContext(object context)
         {
             this._context = context;
+            this._child?.InjectContext(context);
         }
         protected object _context { get; private set; }
 
@@ -28,7 +29,11 @@ namespace com.zeroerror.behaviortree.Runtime
         public NodeStatus Tick(float dt)
         {
             var curStatus = _Tick(dt);
-            if (curStatus == this._status) return curStatus;
+            if (curStatus == this._status)
+            {
+                if (curStatus == NodeStatus.Success) this._child?.Tick(dt);
+                return curStatus;
+            }
 
             var fromStatus = this._status;
             var toStatus = curStatus;
@@ -42,6 +47,8 @@ namespace com.zeroerror.behaviortree.Runtime
             {
                 _OnEnter();
             }
+
+            if (toStatus == NodeStatus.Success) this._child?.Tick(dt);
 
             return curStatus;
         }
@@ -57,7 +64,8 @@ namespace com.zeroerror.behaviortree.Runtime
             _status = NodeStatus.None;
         }
 
-        public abstract void AddChild(Node child);
+        private Node _child;
+        public void SetChild(Node child) => this._child = child;
     }
 }
 

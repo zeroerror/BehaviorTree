@@ -12,7 +12,7 @@ namespace com.zeroerror.behaviortree.Runtime
             this.interval = interval;
         }
 
-        protected override NodeStatus M_Tick(float dt)
+        protected override NodeStatus _Tick(float dt)
         {
             time += dt;
             if (time >= interval)
