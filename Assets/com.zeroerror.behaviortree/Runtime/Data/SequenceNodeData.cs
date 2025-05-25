@@ -4,7 +4,7 @@ namespace com.zeroerror.behaviortree.Runtime
     {
         public SequenceNodeData() : base()
         {
-            this.nodeName = "顺序节点";
+            this.nodeName = "复合节点 - 顺序执行";
         }
 
         public override NodeData Clone()
@@ -16,7 +16,8 @@ namespace com.zeroerror.behaviortree.Runtime
 
         public override Node ToNode()
         {
-            throw new System.NotImplementedException();
+            var node = new SequenceNode();
+            return node;
         }
     }
 }

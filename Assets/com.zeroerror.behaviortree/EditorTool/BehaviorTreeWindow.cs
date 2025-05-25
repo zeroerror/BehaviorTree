@@ -9,6 +9,7 @@ namespace com.zeroerror.behaviortree.EditorTool
 
     public class BehaviorTreeWindow : EditorWindow
     {
+        private EntryNodeView entryNodeView;
         private List<NodeView> nodeViews = new List<NodeView>();
         private Vector2 offset;
         private Vector2 drag;
@@ -26,6 +27,15 @@ namespace com.zeroerror.behaviortree.EditorTool
             DrawGrid(20, 0.2f, Color.gray);
             DrawGrid(100, 0.4f, Color.gray);
 
+            if (entryNodeView == null)
+            {
+                entryNodeView = new EntryNodeView();
+                entryNodeView.nodeData.InitGUID();
+                var windowCenterPos = new Vector2(position.width / 2, position.height / 2);
+                entryNodeView.SetPosition(windowCenterPos);
+                nodeViews.Add(entryNodeView);
+            }
+
             DrawNodes();
             DrawConnections();
 
@@ -36,6 +46,12 @@ namespace com.zeroerror.behaviortree.EditorTool
                 SaveTree();
             if (GUILayout.Button("加载行为树"))
                 LoadTree();
+            if (GUILayout.Button("清空行为树"))
+            {
+                entryNodeView = null;
+                nodeViews.Clear();
+                connections.Clear();
+            }
             GUILayout.EndHorizontal();
 
             if (GUI.changed) Repaint();
@@ -126,35 +142,10 @@ namespace com.zeroerror.behaviortree.EditorTool
                             connectFromNode = selectedNodeView;
                         });
                     }
-
-                    // 显示所有装饰节点
-                    foreach (var (menuName, nodeViewType) in NodeViewRegistry.GetAllNodeViewsWithMenu(typeof(DecoratorNodeView)))
-                    {
-                        menu.AddItem(new GUIContent(menuName), false, () =>
-                        {
-                            var nodeView = (NodeView)Activator.CreateInstance(nodeViewType);
-                            nodeView.nodeData.InitGUID();
-                            nodeView.SetPosition(e.mousePosition);
-
-                            var decoratorNodeData = nodeView.nodeData as DecoratorNodeData;
-                            decoratorNodeData.childGuid = selectedNodeView.nodeData.guid; // 连接到被装饰节点
-                            var v = nodeView as DecoratorNodeView;
-                            v.childView = selectedNodeView; // 连接到被装饰节点
-                            // 插入到selectedNodeView之前 
-                            int index = nodeViews.IndexOf(selectedNodeView);
-                            if (index >= 0) nodeViews.Insert(index, nodeView);
-                            // 更新所有父节点
-                            foreach (var conn in connections)
-                            {
-                                if (conn.toNodeId == selectedNodeView.nodeData.guid)
-                                    conn.toNodeId = nodeView.nodeData.guid;
-                            }
-                        });
-                    }
                 }
                 else
                 {
-                    foreach (var (menuName, nodeViewType) in NodeViewRegistry.GetAllNodeViewsWithMenu(typeof(NodeView), typeof(DecoratorNodeView)))
+                    foreach (var (menuName, nodeViewType) in NodeViewRegistry.GetAllNodeViewsWithMenu(typeof(NodeView)))
                     {
                         menu.AddItem(new GUIContent("创建/" + menuName), false, () =>
                         {
@@ -175,21 +166,6 @@ namespace com.zeroerror.behaviortree.EditorTool
 
         private void DeleteNode(NodeView view)
         {
-            // 1. 先找到所有以view为childView的装饰节点
-            List<NodeView> decoratorToDelete = new List<NodeView>();
-            foreach (var node in nodeViews)
-            {
-                if (node is DecoratorNodeView decorator && decorator.childView == view)
-                {
-                    decoratorToDelete.Add(decorator);
-                }
-            }
-            // 2. 递归删除所有相关装饰节点
-            foreach (var decorator in decoratorToDelete)
-            {
-                DeleteNode(decorator);
-            }
-            // 3. 移除自身和所有连接
             nodeViews.Remove(view);
             connections.RemoveAll(c => c.fromNodeId == view.nodeData.guid || c.toNodeId == view.nodeData.guid);
         }
@@ -203,8 +179,9 @@ namespace com.zeroerror.behaviortree.EditorTool
             foreach (var node in nodeViews)
             {
                 var nodeData = node.ExportData();
-                asset.nodes.Add(nodeData.Clone());
+                asset.nodeDatas.Add(nodeData.Clone());
             }
+            asset.entryNodeData = entryNodeView.nodeData.Clone();
             asset.connections = BuildConnectionData();
 
             AssetDatabase.CreateAsset(asset, path);
@@ -229,7 +206,7 @@ namespace com.zeroerror.behaviortree.EditorTool
             }
 
             nodeViews.Clear();
-            foreach (var nodeData in asset.nodes)
+            foreach (var nodeData in asset.nodeDatas)
             {
                 var viewType = Type.GetType(nodeData.viewType);
                 var nodeView = (NodeView)Activator.CreateInstance(viewType);
@@ -237,23 +214,7 @@ namespace com.zeroerror.behaviortree.EditorTool
                 nodeViews.Add(nodeView);
             }
 
-            // 刷新 decoratorView 的 childView
-            foreach (var nodeView in nodeViews)
-            {
-                if (nodeView is DecoratorNodeView decoratorView)
-                {
-                    var childNode = nodeViews.Find(n =>
-                    {
-                        var decoratorData = decoratorView.nodeData as DecoratorNodeData;
-                        return n.nodeData.guid == decoratorData.childGuid;
-                    });
-                    if (childNode != null)
-                    {
-                        decoratorView.childView = childNode;
-                    }
-                }
-            }
-
+            entryNodeView = nodeViews.Find(n => n is EntryNodeView) as EntryNodeView;
             connections = new List<ConnectionData>(asset.connections);
             Debug.Log("行为树已加载: " + path);
         }
@@ -306,7 +267,7 @@ namespace com.zeroerror.behaviortree.EditorTool
                 for (int i = nodeViews.Count - 1; i >= 0; i--)
                 {
                     var node = nodeViews[i];
-                    if (node.rect.Contains(mousePos) && node != connectFromNode)
+                    if (node.rect.Contains(mousePos) && node != connectFromNode && node is not EntryNodeView)
                     {
                         toNode = node;
                         break;
@@ -320,6 +281,13 @@ namespace com.zeroerror.behaviortree.EditorTool
                         fromNodeId = connectFromNode.nodeData.guid,
                         toNodeId = toNode.nodeData.guid
                     });
+                    // 复合节点除了连线外，还要额外在节点内记录子节点guid
+                    if (connectFromNode is CompositeNodeView)
+                    {
+                        var compositeNodeData = connectFromNode.nodeData as CompositeNodeData;
+                        compositeNodeData.childGuids.Add(toNode.nodeData.guid);
+                    }
+
                     connectMode = ConnectMode.None;
                     connectFromNode = null;
                     Event.current.Use();
@@ -362,6 +330,10 @@ namespace com.zeroerror.behaviortree.EditorTool
                 NodeView to = nodeViews.Find(n => n.nodeData.guid == conn.toNodeId);
                 if (from != null && to != null)
                 {
+                    // 如果两个 rect 重叠就跳过绘制
+                    if (from.rect.Overlaps(to.rect))
+                        continue;
+
                     Vector2 fromCenter = from.rect.center;
                     Vector2 toCenter = to.rect.center;
                     Vector2 dir = (toCenter - fromCenter).normalized;

@@ -7,7 +7,7 @@ namespace com.zeroerror.behaviortree.Runtime
         public readonly float delayTime;
         private float elapsedTime;
 
-        public DelayNode(Node child, float delayTime) : base(child)
+        public DelayNode(float delayTime) : base()
         {
             this.delayTime = delayTime;
             this.elapsedTime = 0f;
@@ -23,6 +23,5 @@ namespace com.zeroerror.behaviortree.Runtime
             }
             return NodeStatus.Running;
         }
-
     }
 }

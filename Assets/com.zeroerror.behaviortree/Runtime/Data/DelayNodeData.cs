@@ -6,7 +6,7 @@ namespace com.zeroerror.behaviortree.Runtime
 
         public DelayNodeData() : base()
         {
-            this.nodeName = "延迟时间";
+            this.nodeName = "装饰节点 - 延迟时间";
         }
 
         public override NodeData Clone()
@@ -19,9 +19,9 @@ namespace com.zeroerror.behaviortree.Runtime
 
         public override Node ToNode()
         {
-            // todo 
-            var node = new DelayNode(null, this.delayTime);
+            var node = new DelayNode(delayTime);
             return node;
         }
+
     }
 }

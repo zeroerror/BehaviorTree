@@ -6,16 +6,10 @@ namespace com.zeroerror.behaviortree.Runtime
     {
         public List<string> childGuids = new List<string>();
 
-        public CompositeNodeData() : base()
-        {
-            this.nodeName = "复合节点";
-        }
-
         public override void CopyFrom(NodeData data)
         {
             base.CopyFrom(data);
-            var compositeData = data as CompositeNodeData;
-            if (compositeData != null)
+            if (data is CompositeNodeData compositeData)
             {
                 this.childGuids.Clear();
                 this.childGuids.AddRange(compositeData.childGuids);

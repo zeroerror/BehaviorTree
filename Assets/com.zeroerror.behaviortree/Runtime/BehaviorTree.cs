@@ -2,21 +2,21 @@ namespace com.zeroerror.behaviortree.Runtime
 {
     public class BehaviorTree
     {
-        public Node rootNode { get; private set; }
+        public Node entryNode { get; private set; }
 
-        public BehaviorTree(Node rootNode)
+        public BehaviorTree(Node entryNode)
         {
-            this.rootNode = rootNode;
+            this.entryNode = entryNode;
         }
 
         public NodeStatus Tick(float dt)
         {
-            return rootNode?.Tick(dt) ?? NodeStatus.Failure;
+            return entryNode?.Tick(dt) ?? NodeStatus.Failure;
         }
 
         public void Reset()
         {
-            rootNode?.Reset();
+            entryNode?.Reset();
         }
     }
 }

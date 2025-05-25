@@ -35,7 +35,6 @@ namespace com.zeroerror.behaviortree.Runtime
             }
         }
 
-        // 将节点数据转换为逻辑节点
         public abstract Node ToNode();
     }
     // delegate 用于根据 guid 获取节点数据的方法

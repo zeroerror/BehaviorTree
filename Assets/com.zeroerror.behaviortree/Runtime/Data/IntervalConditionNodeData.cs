@@ -1,15 +1,13 @@
-using com.zeroerror.behaviortree.Sample;
-
 namespace com.zeroerror.behaviortree.Runtime
 {
     [System.Serializable]
-    public class IntervalConditionNodeData : NodeData
+    public class IntervalConditionNodeData : ConditionData
     {
         public float interval = 1f;
 
         public IntervalConditionNodeData() : base()
         {
-            this.nodeName = "间隔时间";
+            this.nodeName = "条件节点 - 延迟时间";
         }
 
         public override NodeData Clone()
@@ -22,8 +20,9 @@ namespace com.zeroerror.behaviortree.Runtime
 
         public override Node ToNode()
         {
-            var node = new IntervalConditionNode(this.interval);
+            var node = new IntervalConditionNode(interval);
             return node;
         }
+
     }
 }

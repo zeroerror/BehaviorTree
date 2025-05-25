@@ -1,7 +1,7 @@
 namespace com.zeroerror.behaviortree.Runtime
 {
     [System.Serializable]
-    public abstract class DecoratorNodeData : NodeData
+    public abstract class ConditionData : NodeData
     {
     }
 }

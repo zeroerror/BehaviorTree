@@ -1,23 +1,24 @@
 namespace com.zeroerror.behaviortree.Runtime
 {
-    public class SelectorNodeData : CompositeNodeData
+    public class EntryNodeData : NodeData
     {
-        public SelectorNodeData() : base()
+        public EntryNodeData() : base()
         {
-            this.nodeName = "复合节点 - 选择器";
+            this.nodeName = "入口节点";
         }
 
         public override NodeData Clone()
         {
-            var nodeData = new SelectorNodeData();
+            var nodeData = new EntryNodeData();
             nodeData.CopyFrom(this);
             return nodeData;
         }
 
         public override Node ToNode()
         {
-            var node = new SelectorNode();
+            var node = new EntryNode();
             return node;
         }
+
     }
 }

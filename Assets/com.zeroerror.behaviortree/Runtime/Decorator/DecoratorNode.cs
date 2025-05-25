@@ -2,16 +2,18 @@ namespace com.zeroerror.behaviortree.Runtime
 {
     public abstract class DecoratorNode : Node
     {
-        public readonly Node child;
+        public Node child;
 
-        public DecoratorNode(Node child)
-        {
-            this.child = child;
-        }
+        public DecoratorNode() { }
 
         public override void InjectContext(object context)
         {
             child.InjectContext(context);
+        }
+
+        public override void AddChild(Node child)
+        {
+            this.child = child;
         }
     }
 }

@@ -1,6 +1,6 @@
 namespace com.zeroerror.behaviortree.Runtime
 {
-    public class IntervalConditionNode : Node
+    public class IntervalConditionNode : ConditionNode
     {
         private float time;
         public override string Name => "条件节点 - 间隔时间";
@@ -12,7 +12,7 @@ namespace com.zeroerror.behaviortree.Runtime
             this.interval = interval;
         }
 
-        protected override NodeStatus _Tick(float dt)
+        protected override NodeStatus M_Tick(float dt)
         {
             time += dt;
             if (time >= interval)

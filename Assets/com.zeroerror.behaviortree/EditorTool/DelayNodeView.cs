@@ -10,5 +10,11 @@ namespace com.zeroerror.behaviortree.EditorTool
             var nodeData = new DelayNodeData();
             return nodeData;
         }
+
+        protected override void _Draw()
+        {
+            var data = this.nodeData as DelayNodeData;
+            data.delayTime = UnityEditor.EditorGUILayout.FloatField("延迟时间", data.delayTime);
+        }
     }
 }

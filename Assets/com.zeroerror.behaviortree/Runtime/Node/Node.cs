@@ -56,6 +56,8 @@ namespace com.zeroerror.behaviortree.Runtime
             _Reset();
             _status = NodeStatus.None;
         }
+
+        public abstract void AddChild(Node child);
     }
 }
 
