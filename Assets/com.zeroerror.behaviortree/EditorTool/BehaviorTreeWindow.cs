@@ -31,6 +31,7 @@ namespace com.zeroerror.behaviortree.EditorTool
             {
                 entryNodeView = new EntryNodeView();
                 entryNodeView.nodeData.InitGUID();
+                entryNodeView.InjectWindow(this);
                 var windowCenterPos = new Vector2(position.width / 2, position.height / 2);
                 entryNodeView.SetPosition(windowCenterPos);
                 nodeViews.Add(entryNodeView);
@@ -38,6 +39,9 @@ namespace com.zeroerror.behaviortree.EditorTool
 
             DrawNodes();
             DrawConnections();
+
+            // 撤销/重做快捷键监听
+            HandleUndoRedo(Event.current);
 
             ProcessAllEvents(Event.current);
 
@@ -48,9 +52,7 @@ namespace com.zeroerror.behaviortree.EditorTool
                 LoadTree();
             if (GUILayout.Button("清空行为树"))
             {
-                entryNodeView = null;
-                nodeViews.Clear();
-                connections.Clear();
+                ClearTree();
             }
             GUILayout.EndHorizontal();
 
@@ -133,13 +135,18 @@ namespace com.zeroerror.behaviortree.EditorTool
                 if (selectedNodeView != null)
                 {
                     // 删除节点
-                    menu.AddItem(new GUIContent("删除节点"), false, () => DeleteNode(selectedNodeView));
+                    menu.AddItem(new GUIContent("删除节点"), false, () =>
+                    {
+                        DeleteNode(selectedNodeView);
+                        RecordUndoSnapshot();
+                    });
                     // 删除输入端口
                     var hasInputPort = connections.Exists(c => c.toNodeId == selectedNodeView.nodeData.guid);
                     if (hasInputPort)
                         menu.AddItem(new GUIContent("删除输入端口"), false, () =>
                         {
                             this.connections.RemoveAll(c => c.toNodeId == selectedNodeView.nodeData.guid);
+                            RecordUndoSnapshot();
                         });
                     // 删除输出端口
                     var hasOutputPort = connections.Exists(c => c.fromNodeId == selectedNodeView.nodeData.guid);
@@ -147,6 +154,7 @@ namespace com.zeroerror.behaviortree.EditorTool
                         menu.AddItem(new GUIContent("删除输出端口"), false, () =>
                         {
                             this.connections.RemoveAll(c => c.fromNodeId == selectedNodeView.nodeData.guid);
+                            RecordUndoSnapshot();
                         });
                     // 设置输出端口
                     if (!hasOutputPort)
@@ -185,10 +193,12 @@ namespace com.zeroerror.behaviortree.EditorTool
                     {
                         menu.AddItem(new GUIContent("创建/" + menuName), false, () =>
                         {
-                            var nodeView = (NodeView)Activator.CreateInstance(nodeViewType);
+                            var nodeView = (NodeView)Activator.CreateInstance(nodeViewType, this);
                             nodeView.nodeData.InitGUID();
                             nodeView.SetPosition(e.mousePosition);
+                            nodeView.InjectWindow(this);
                             nodeViews.Add(nodeView);
+                            RecordUndoSnapshot();
                         });
                     }
                     // 粘贴节点
@@ -220,11 +230,13 @@ namespace com.zeroerror.behaviortree.EditorTool
                                         Debug.LogError("无法找到节点视图类型: " + viewType);
                                         return;
                                     }
-                                    var nodeView = (NodeView)Activator.CreateInstance(nodeViewType);
+                                    var nodeView = (NodeView)Activator.CreateInstance(nodeViewType, this);
                                     nodeView.nodeData = nodeData;
                                     nodeView.nodeData.InitGUID(true);
                                     nodeView.SetPosition(e.mousePosition);
+                                    nodeView.InjectWindow(this);
                                     nodeViews.Add(nodeView);
+                                    RecordUndoSnapshot();
                                 }
                             });
                     }
@@ -248,19 +260,26 @@ namespace com.zeroerror.behaviortree.EditorTool
             string path = EditorUtility.SaveFilePanelInProject("保存行为树", "BehaviorTreeAsset", "asset", "保存行为树到Asset");
             if (string.IsNullOrEmpty(path)) return;
 
+            BehaviorTreeAsset asset = CreateAsset();
+
+            AssetDatabase.CreateAsset(asset, path);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("行为树已保存: " + path);
+        }
+
+        private BehaviorTreeAsset CreateAsset()
+        {
             BehaviorTreeAsset asset = ScriptableObject.CreateInstance<BehaviorTreeAsset>();
             foreach (var node in nodeViews)
             {
                 var nodeData = node.ExportData();
                 asset.nodeDatas.Add(nodeData.Clone());
             }
-            asset.entryNodeData = entryNodeView.nodeData.Clone();
-            asset.connections = BuildConnectionData();
+            asset.entryNodeData = entryNodeView?.nodeData.Clone();
+            asset.connections = new List<ConnectionData>(connections);
 
-            AssetDatabase.CreateAsset(asset, path);
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-            Debug.Log("行为树已保存: " + path);
+            return asset;
         }
 
         private void LoadTree()
@@ -272,24 +291,36 @@ namespace com.zeroerror.behaviortree.EditorTool
                 path = "Assets" + path.Substring(Application.dataPath.Length);
 
             var asset = AssetDatabase.LoadAssetAtPath<BehaviorTreeAsset>(path);
+            this.LoadTree(asset);
+            this.RefreshUndoStack();
+            Debug.Log("行为树已加载: " + path);
+        }
+
+        private void LoadTree(BehaviorTreeAsset asset)
+        {
             if (asset == null)
             {
-                Debug.LogError("未找到行为树Asset: " + path);
                 return;
             }
-
             nodeViews.Clear();
             foreach (var nodeData in asset.nodeDatas)
             {
                 var viewType = Type.GetType(nodeData.viewType);
                 var nodeView = (NodeView)Activator.CreateInstance(viewType);
                 nodeView.ImportData(nodeData.Clone());
+                nodeView.InjectWindow(this);
                 nodeViews.Add(nodeView);
             }
-
             entryNodeView = nodeViews.Find(n => n is EntryNodeView) as EntryNodeView;
             connections = new List<ConnectionData>(asset.connections);
-            Debug.Log("行为树已加载: " + path);
+        }
+
+        private void ClearTree()
+        {
+            entryNodeView = null;
+            nodeViews.Clear();
+            connections.Clear();
+            RefreshUndoStack();
         }
 
         public NodeView GetNodeViewByGuid(string guid)
@@ -310,13 +341,6 @@ namespace com.zeroerror.behaviortree.EditorTool
         private ConnectMode connectMode = ConnectMode.None;
         private NodeView connectFromNode = null;
         private bool isConnectToHold = false;
-
-        private List<ConnectionData> BuildConnectionData()
-        {
-            // 如果你的connections已经是ConnectionData列表，这里直接return connections;
-            // 如果用的是自定义Connection类，需要转换为ConnectionData
-            return new List<ConnectionData>(connections);
-        }
 
         private void _ProcessConnectEvents(Event e)
         {
@@ -488,6 +512,128 @@ namespace com.zeroerror.behaviortree.EditorTool
                 draggingNode = null;
                 e.Use();
             }
+        }
+
+        #endregion
+
+        #region [Undo]
+
+        private Stack<string> undoStack = new Stack<string>();
+        private Stack<string> redoStack = new Stack<string>();
+        private string lastSnapshot = "";
+
+        private void OnEnable()
+        {
+            RefreshUndoStack();
+        }
+
+        private void RefreshUndoStack()
+        {
+            // 初始快照
+            lastSnapshot = ExportTreeJson();
+            undoStack.Clear();
+            redoStack.Clear();
+            undoStack.Push(lastSnapshot);
+        }
+
+        private void HandleUndoRedo(Event e)
+        {
+            // Ctrl+Z 撤销
+            if (e.type == EventType.KeyDown && e.control && e.keyCode == KeyCode.Z)
+            {
+                UndoAction();
+                e.Use();
+            }
+            // Ctrl+Y 撤销我的撤销
+            if (e.type == EventType.KeyDown && e.control && e.keyCode == KeyCode.Y)
+            {
+                RedoAction();
+                e.Use();
+            }
+            // 在鼠标左键松开时做快照
+            if (e.type == EventType.MouseUp && e.button == 0)
+            {
+                RecordUndoSnapshot();
+            }
+        }
+
+        // 每次数据变更时都要记录快照, 用于撤销/重做
+        public void RecordUndoSnapshot()
+        {
+            string currSnapshot = ExportTreeJson();
+            // 只有内容有变才压栈
+            if (currSnapshot != lastSnapshot)
+            {
+                undoStack.Push(currSnapshot);
+                lastSnapshot = currSnapshot;
+                redoStack.Clear();
+
+                // 计算整个 undoStack 的大小
+                int totalByteCount = 0;
+                foreach (var snapshot in undoStack)
+                {
+                    totalByteCount += System.Text.Encoding.UTF8.GetByteCount(snapshot);
+                }
+                var totalMB = totalByteCount / 1024f / 1024f;
+                Debug.Log($"UndoStack 总大小: {totalMB:F2}MB");
+                if (totalMB > 10)
+                {
+                    // 1. 拷贝到数组（栈顶在数组0号位，栈底在最后一个）
+                    var arr = undoStack.ToArray();
+                    int keepCount = arr.Length / 2; // 保留一半（向下取整）
+                    var newStack = new Stack<string>(keepCount);
+                    // 2. 只保留最近的 keepCount 个
+                    for (int i = keepCount - 1; i >= 0; --i)
+                    {
+                        newStack.Push(arr[i]);
+                    }
+                    undoStack = newStack; // 替换
+                    Debug.Log($"UndoStack 超过100MB，已保留最近的 {keepCount} 个快照，栈大小: {keepCount}");
+                }
+            }
+        }
+
+        private void UndoAction()
+        {
+            if (undoStack.Count > 1)
+            {
+                redoStack.Push(undoStack.Pop());
+                string json = undoStack.Peek();
+                ImportTreeJson(json);
+                lastSnapshot = json;
+                GUI.changed = true;
+            }
+        }
+
+        private void RedoAction()
+        {
+            if (redoStack.Count > 0)
+            {
+                string json = redoStack.Pop();
+                undoStack.Push(json);
+                ImportTreeJson(json);
+                lastSnapshot = json;
+                GUI.changed = true;
+            }
+        }
+
+        // 快照导出
+        private string ExportTreeJson()
+        {
+            var asset = this.CreateAsset();
+            string json = JsonUtility.ToJson(asset);
+            DestroyImmediate(asset);
+            return json;
+        }
+
+        // 快照还原
+        private void ImportTreeJson(string json)
+        {
+            if (string.IsNullOrEmpty(json)) return;
+            var asset = ScriptableObject.CreateInstance<BehaviorTreeAsset>();
+            JsonUtility.FromJsonOverwrite(json, asset);
+            this.LoadTree(asset);
+            DestroyImmediate(asset);
         }
 
         #endregion

@@ -9,6 +9,7 @@ namespace com.zeroerror.behaviortree.EditorTool
         public NodeData nodeData; // 逻辑节点
 
         protected BehaviorTreeWindow window; // 关联的行为树窗口
+        public void InjectWindow(BehaviorTreeWindow window) => this.window = window;
         protected virtual Color contentColor => new Color(1, 1, 1, 1); // 内容颜色
         protected virtual Color bgColor => new Color(35, 35, 35, 255) / 255.0f; // 背景颜色
         protected Rect _rect = new Rect(0, 0, 200, 100);
@@ -37,6 +38,8 @@ namespace com.zeroerror.behaviortree.EditorTool
         // 派生类重写以自定义显示内容
         public virtual void Draw()
         {
+            EditorGUI.BeginChangeCheck();
+
             var contentColor = GUI.contentColor;
             GUI.contentColor = this.contentColor;
 
@@ -47,6 +50,11 @@ namespace com.zeroerror.behaviortree.EditorTool
             GUILayout.EndArea();
 
             GUI.contentColor = contentColor;
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                window.RecordUndoSnapshot(); // 通知主窗口记录照
+            }
         }
         protected abstract void _Draw();
 
