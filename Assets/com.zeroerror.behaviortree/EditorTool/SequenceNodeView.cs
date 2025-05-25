@@ -2,12 +2,12 @@ using com.zeroerror.behaviortree.Runtime;
 
 namespace com.zeroerror.behaviortree.EditorTool
 {
-    [NodeMenu("装饰节点/延迟节点")]
-    public class DelayNodeView : DecoratorNodeView
+    [NodeMenu("复合节点/顺序节点")]
+    public class SequenceNodeView : CompositeNodeView
     {
         protected override NodeData _InitNode()
         {
-            var nodeData = new DelayNodeData();
+            var nodeData = new SequenceNodeData();
             return nodeData;
         }
     }

@@ -1,21 +1,20 @@
 using UnityEditor;
 using UnityEngine;
-using com.zeroerror.behaviortree.Runtime;
 
 namespace com.zeroerror.behaviortree.EditorTool
 {
     public abstract class DecoratorNodeView : NodeView
     {
-        protected virtual float contentHeight => 50;
+        protected virtual float ContentHeight => 50;
         protected override Color bgColor => new Color(0.5f, 0.5f, 0.5f, 0.5f); // 背景颜色
         public NodeView childView; // 子节点视图
 
         public override void Draw()
         {
             this._rect = childView.rect;
-            this._rect.height += contentHeight;
+            this._rect.height += ContentHeight;
             this._rect.x -= 10;
-            this._rect.y -= contentHeight;
+            this._rect.y -= ContentHeight;
             EditorGUI.DrawRect(this._rect, this.bgColor);
 
             GUILayout.BeginArea(this._rect);

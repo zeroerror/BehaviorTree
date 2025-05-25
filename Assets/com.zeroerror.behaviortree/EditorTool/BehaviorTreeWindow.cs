@@ -117,38 +117,44 @@ namespace com.zeroerror.behaviortree.EditorTool
                 if (selectedNodeView != null)
                 {
                     menu.AddItem(new GUIContent("删除节点"), false, () => DeleteNode(selectedNodeView));
-                    menu.AddItem(new GUIContent("创建连线"), false, () =>
+                    var hasConnectedNext = connections.Exists(c => c.fromNodeId == selectedNodeView.nodeData.guid);
+                    if (!hasConnectedNext || selectedNodeView is CompositeNodeView)
                     {
-                        connectMode = ConnectMode.SelectingTo;
-                        connectFromNode = selectedNodeView;
-                    });
-
-                    // 显示所有装饰节点 todo
-                    menu.AddItem(new GUIContent("添加装饰节点/Delay"), false, () =>
-                    {
-                        var decoratorView = new DelayNodeView();
-                        decoratorView.nodeData.InitGUID();
-                        decoratorView.SetPosition(e.mousePosition);
-                        var decoratorNodeData = decoratorView.nodeData as DecoratorNodeData;
-                        decoratorNodeData.childGuid = selectedNodeView.nodeData.guid; // 连接到被装饰节点
-                        decoratorView.childView = selectedNodeView; // 连接到被装饰节点
-                        // 插入到selectedNodeView之前 
-                        int index = nodeViews.IndexOf(selectedNodeView);
-                        if (index >= 0) nodeViews.Insert(index, decoratorView);
-                        // 更新所有父节点：指向decorator.guid，而不是B
-                        foreach (var conn in connections)
+                        menu.AddItem(new GUIContent("创建连线"), false, () =>
                         {
-                            if (conn.toNodeId == selectedNodeView.nodeData.guid)
-                                conn.toNodeId = decoratorView.nodeData.guid;
-                        }
-                        // 如果B是根节点，记得把根节点指向decorator
-                        // ...
-                    });
+                            connectMode = ConnectMode.SelectingTo;
+                            connectFromNode = selectedNodeView;
+                        });
+                    }
 
+                    // 显示所有装饰节点
+                    foreach (var (menuName, nodeViewType) in NodeViewRegistry.GetAllNodeViewsWithMenu(typeof(DecoratorNodeView)))
+                    {
+                        menu.AddItem(new GUIContent(menuName), false, () =>
+                        {
+                            var nodeView = (NodeView)Activator.CreateInstance(nodeViewType);
+                            nodeView.nodeData.InitGUID();
+                            nodeView.SetPosition(e.mousePosition);
+
+                            var decoratorNodeData = nodeView.nodeData as DecoratorNodeData;
+                            decoratorNodeData.childGuid = selectedNodeView.nodeData.guid; // 连接到被装饰节点
+                            var v = nodeView as DecoratorNodeView;
+                            v.childView = selectedNodeView; // 连接到被装饰节点
+                            // 插入到selectedNodeView之前 
+                            int index = nodeViews.IndexOf(selectedNodeView);
+                            if (index >= 0) nodeViews.Insert(index, nodeView);
+                            // 更新所有父节点
+                            foreach (var conn in connections)
+                            {
+                                if (conn.toNodeId == selectedNodeView.nodeData.guid)
+                                    conn.toNodeId = nodeView.nodeData.guid;
+                            }
+                        });
+                    }
                 }
                 else
                 {
-                    foreach (var (menuName, nodeViewType) in NodeViewRegistry.GetAllNodeViewsWithMenu())
+                    foreach (var (menuName, nodeViewType) in NodeViewRegistry.GetAllNodeViewsWithMenu(typeof(NodeView), typeof(DecoratorNodeView)))
                     {
                         menu.AddItem(new GUIContent("创建/" + menuName), false, () =>
                         {

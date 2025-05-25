@@ -19,8 +19,7 @@ namespace com.zeroerror.behaviortree.Runtime
 
         public override Node ToNode()
         {
-            // var childNodeView = this.window.GetNodeViewByGuid(this.childGuid);
-            // var childNode = childNodeView?.nodeData.ToNode();
+            // todo 
             var node = new DelayNode(null, this.delayTime);
             return node;
         }

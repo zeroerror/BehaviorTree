@@ -10,39 +10,40 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 37b9d3a80dcb71042ac8f13b64b5f6f9, type: 3}
-  m_Name: 1
+  m_Name: BehaviorTreeAsset
   m_EditorClassIdentifier: 
   nodes:
-  - rid: 5371023593026879517
-  - rid: 5371023593026879518
-  - rid: 5371023593026879519
-  connections: []
+  - rid: 5371023612390408201
+  - rid: 5371023612390408202
+  connections:
+  - fromNodeId: a0f28e93-bbc1-4372-9856-499a5144ae33
+    toNodeId: 34562056-bfec-4b7e-9c12-91c938e540fe
+  - fromNodeId: a0f28e93-bbc1-4372-9856-499a5144ae33
+    toNodeId: b888c538-8846-4a3b-81c3-c73566dbef27
+  - fromNodeId: a0f28e93-bbc1-4372-9856-499a5144ae33
+    toNodeId: d725975e-73e1-4389-8828-a4201be0967a
+  - fromNodeId: 0bb6c018-d285-4574-b237-de48783dd350
+    toNodeId: 4bb9b40a-17c3-4660-9fac-b9449af2fd2d
+  - fromNodeId: 92fc77d5-2a44-4687-b344-691f11832525
+    toNodeId: 4bb9b40a-17c3-4660-9fac-b9449af2fd2d
   references:
     version: 2
     RefIds:
-    - rid: 5371023593026879517
+    - rid: 5371023612390408201
       type: {class: IntervalConditionNodeData, ns: com.zeroerror.behaviortree.Runtime, asm: Assembly-CSharp}
       data:
         nodeName: "\u95F4\u9694\u65F6\u95F4"
-        guid: 89453b8a-7e22-40c2-9175-0768469b46ab
-        position: {x: 337, y: 464}
+        guid: 34562056-bfec-4b7e-9c12-91c938e540fe
+        position: {x: 328, y: 482}
         viewType: com.zeroerror.behaviortree.EditorTool.IntervalConditionNodeView,
           Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-        interval: 1.5
-    - rid: 5371023593026879518
-      type: {class: LogActionNodeData, ns: com.zeroerror.behaviortree.Runtime, asm: Assembly-CSharp}
-      data:
-        nodeName: "\u65E5\u5FD7\u6253\u5370"
-        guid: 90621fc5-3b50-4f22-ac83-633e87f143d0
-        position: {x: 725, y: 398}
-        viewType: com.zeroerror.behaviortree.EditorTool.LogActionNodeView, Assembly-CSharp,
-          Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    - rid: 5371023593026879519
+        interval: 1
+    - rid: 5371023612390408202
       type: {class: IntervalConditionNodeData, ns: com.zeroerror.behaviortree.Runtime, asm: Assembly-CSharp}
       data:
         nodeName: "\u95F4\u9694\u65F6\u95F4"
-        guid: bf15ebdf-b64d-4dd1-a8ad-ba996a3b3016
-        position: {x: 610, y: 253}
+        guid: b888c538-8846-4a3b-81c3-c73566dbef27
+        position: {x: 584, y: 478}
         viewType: com.zeroerror.behaviortree.EditorTool.IntervalConditionNodeView,
           Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
         interval: 1

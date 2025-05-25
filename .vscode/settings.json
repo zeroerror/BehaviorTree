@@ -51,5 +51,7 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "BahaviourTree.sln"
+    "dotnet.defaultSolution": "BahaviourTree.sln",
+    "dotnet.server.useOmnisharp": false,
+    "omnisharp.autoStart": true
 }
