@@ -132,6 +132,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 674638451}
+  - component: {fileID: 674638453}
   - component: {fileID: 674638452}
   m_Layer: 0
   m_Name: Sample
@@ -167,4 +168,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15b6e5bb30d057a4eb31e99746af6ab0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  behaviorTreeAsset: {fileID: 11400000, guid: f3b980f266c47db42b88d724d88189dc, type: 2}
+--- !u!114 &674638453
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 674638450}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4de7aaae8ebf0b94cb3cee1f5e11976d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  asset: {fileID: 11400000, guid: e40a9d3bec1cae34bbc66cf9f2622c2b, type: 2}

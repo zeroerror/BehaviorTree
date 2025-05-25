@@ -20,6 +20,7 @@ namespace com.zeroerror.behaviortree.Runtime
             foreach (var nodeData in nodeDatas)
             {
                 var node = nodeData.ToNode();
+                node.SetGuid(nodeData.guid);
                 nodeList.Add(node);
                 nodeDict[nodeData.guid] = node;
             }

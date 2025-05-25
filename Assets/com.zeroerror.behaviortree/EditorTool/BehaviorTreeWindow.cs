@@ -14,6 +14,7 @@ namespace com.zeroerror.behaviortree.EditorTool
         private Vector2 offset;
         private Vector2 drag;
         private NodeView selectedNodeView = null;
+        private BehaviorTreeComponent treeComponent = null;
 
         [MenuItem("Tools/Behavior Tree Editor")]
         public static void OpenWindow()
@@ -22,10 +23,41 @@ namespace com.zeroerror.behaviortree.EditorTool
             window.titleContent = new GUIContent("Behavior Tree Editor");
         }
 
+        private void OnInspectorUpdate()
+        {
+            // 只有treeComponent存在且运行时tree不为空时才刷新
+            if (treeComponent != null && treeComponent.tree != null)
+            {
+                Repaint();
+            }
+        }
+
         private void OnGUI()
         {
             DrawGrid(20, 0.2f, Color.gray);
             DrawGrid(100, 0.4f, Color.gray);
+
+            // 行为树组件捕获
+            var oldTreeComponent = treeComponent;
+            treeComponent = Selection.activeGameObject?.GetComponent<BehaviorTreeComponent>();
+            if (treeComponent != oldTreeComponent)
+            {
+                if (treeComponent != null)
+                {
+                    LoadTree(treeComponent.asset);
+                }
+                else
+                {
+                    ClearTree();
+                }
+            }
+
+            // 显示当前行为树路径
+            GUILayout.BeginHorizontal();
+            var assetPath = treeComponent != null ? AssetDatabase.GetAssetPath(treeComponent.asset) : "";
+            GUILayout.Label("运行时行为树: " + assetPath);
+
+            GUILayout.EndHorizontal();
 
             if (entryNodeView == null)
             {
@@ -88,11 +120,43 @@ namespace com.zeroerror.behaviortree.EditorTool
             {
                 node.Draw();
             }
-            DrawOutline(draggingNode);
-            DrawOutline(connectFromNode);
+            DrawOutline(draggingNode, Color.red);
+            DrawOutline(connectFromNode, Color.red);
+
+            // 运行时行为树节点展示
+            var tree = treeComponent?.tree;
+            if (tree != null)
+            {
+                tree.entryNode.ForeachChildren((n) =>
+                {
+                    var guid = n.guid;
+                    var nodeView = GetNodeViewByGuid(guid);
+                    if (nodeView != null)
+                    {
+                        switch (n.Status)
+                        {
+                            case NodeStatus.Running:
+                                DrawOutline(nodeView, Color.yellow);
+                                break;
+                            case NodeStatus.Success:
+                                DrawOutline(nodeView, Color.green);
+                                break;
+                            case NodeStatus.Failure:
+                                DrawOutline(nodeView, Color.red);
+                                break;
+                            case NodeStatus.Aborted:
+                                DrawOutline(nodeView, Color.gray);
+                                break;
+                            default:
+                                DrawOutline(nodeView, Color.white);
+                                break;
+                        }
+                    }
+                });
+            }
         }
 
-        private void DrawOutline(NodeView view)
+        private void DrawOutline(NodeView view, Color color)
         {
             // 选中节点红色描边
             if (view != null)
@@ -101,7 +165,8 @@ namespace com.zeroerror.behaviortree.EditorTool
                 Rect r = view.rect;
                 // 可适当扩大一点边框
                 r.xMin -= 2; r.yMin -= 2; r.xMax += 2; r.yMax += 2;
-                Handles.color = Color.red;
+                var oldc = Handles.color;
+                Handles.color = color;
                 Handles.DrawAAPolyLine(4,
                     new Vector3(r.xMin, r.yMin),
                     new Vector3(r.xMax, r.yMin),
@@ -109,7 +174,7 @@ namespace com.zeroerror.behaviortree.EditorTool
                     new Vector3(r.xMin, r.yMax),
                     new Vector3(r.xMin, r.yMin)
                 );
-                Handles.color = Color.white;
+                Handles.color = oldc;
             }
         }
 
@@ -434,10 +499,37 @@ namespace com.zeroerror.behaviortree.EditorTool
                     Vector2 fromEdge = GetRectEdgePoint(from.rect, dir);
                     Vector2 toEdge = GetRectEdgePoint(to.rect, -dir);
 
+                    var oldc = Handles.color;
+
                     Handles.color = conn.isHold ? Color.blue : Color.white;
+                    var tree = this.treeComponent?.tree;
+                    if (tree != null)
+                    {
+                        var toNodeStatus = tree.nodeDict.TryGetValue(conn.toNodeId, out var toNode) ? toNode.Status : NodeStatus.None;
+                        switch (toNodeStatus)
+                        {
+                            case NodeStatus.Running:
+                                Handles.color = Color.yellow;
+                                break;
+                            case NodeStatus.Success:
+                                Handles.color = Color.green;
+                                break;
+                            case NodeStatus.Failure:
+                                Handles.color = Color.red;
+                                break;
+                            case NodeStatus.Aborted:
+                                Handles.color = Color.gray;
+                                break;
+                            default:
+                                Handles.color = Color.white;
+                                break;
+                        }
+                    }
+
                     Handles.DrawLine(fromEdge, toEdge);
-                    Handles.color = Color.white; // 恢复颜色（可选）
                     DrawArrow(toEdge, dir, 16, 22, Color.white);
+
+                    Handles.color = oldc;
                 }
             }
         }

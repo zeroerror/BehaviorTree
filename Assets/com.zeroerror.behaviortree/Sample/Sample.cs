@@ -2,25 +2,26 @@ using com.zeroerror.behaviortree.Runtime;
 using UnityEngine;
 namespace com.zeroerror.behaviortree.Sample
 {
+    [RequireComponent(typeof(BehaviorTreeComponent))]
     public class Sample : MonoBehaviour
     {
-        private BehaviorTree behaviorTree;
         private SampleContext context;
-        public BehaviorTreeAsset behaviorTreeAsset;
+        private BehaviorTreeComponent behaviorTreeComponent;
+        private bool hasInited = false;
 
         private void Awake()
         {
-            // 创建上下文
-            this.context = new SampleContext();
-            // 创建行为树
-            this.behaviorTree = behaviorTreeAsset.ToTree();
-            this.behaviorTree.entryNode.InjectContext(this.context);
+            behaviorTreeComponent = GetComponent<BehaviorTreeComponent>();
+            Application.targetFrameRate = 60;
         }
 
         private void Update()
         {
-            var dt = Time.deltaTime;
-            this.behaviorTree.Tick(dt);
+            if (!hasInited && behaviorTreeComponent?.tree != null)
+            {
+                this.context = new SampleContext();
+                behaviorTreeComponent.tree.entryNode.InjectContext(context);
+            }
         }
     }
 }

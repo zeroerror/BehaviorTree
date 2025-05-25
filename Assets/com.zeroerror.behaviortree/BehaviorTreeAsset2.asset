@@ -1,0 +1,108 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37b9d3a80dcb71042ac8f13b64b5f6f9, type: 3}
+  m_Name: BehaviorTreeAsset2
+  m_EditorClassIdentifier: 
+  entryNodeData:
+    rid: 5371023621774901248
+  nodeDatas:
+  - rid: 5371023621774901249
+  - rid: 5371023621774901250
+  - rid: 5371023621774901251
+  - rid: 5371023621774901252
+  - rid: 5371023621774901253
+  - rid: 5371023621774901254
+  connections:
+  - fromNodeId: e39e00ab-02fe-49c3-8333-366e31c4f5ff
+    toNodeId: 12041d0f-ba98-46f6-978b-04daecdd21ee
+    isHold: 0
+  - fromNodeId: bff8aa12-ff84-46d0-947a-dd93a2d05ee7
+    toNodeId: 3f8ed238-c9db-46b0-bf18-720c42c5214b
+    isHold: 1
+  - fromNodeId: bff8aa12-ff84-46d0-947a-dd93a2d05ee7
+    toNodeId: 3e89ceba-154a-4ec9-b4f7-dbd2bb619868
+    isHold: 1
+  - fromNodeId: 402f3416-c88c-41c5-b8a1-a44a9f00a144
+    toNodeId: bff8aa12-ff84-46d0-947a-dd93a2d05ee7
+    isHold: 0
+  - fromNodeId: 3f8ed238-c9db-46b0-bf18-720c42c5214b
+    toNodeId: e5e93a13-0ce3-49b2-a06b-c017ecad3ce9
+    isHold: 0
+  - fromNodeId: 3e89ceba-154a-4ec9-b4f7-dbd2bb619868
+    toNodeId: fc662095-473d-4f6b-a6bf-aa76bb49bd2c
+    isHold: 0
+  references:
+    version: 2
+    RefIds:
+    - rid: 5371023621774901248
+      type: {class: EntryNodeData, ns: com.zeroerror.behaviortree.Runtime, asm: Assembly-CSharp}
+      data:
+        nodeName: "\u5165\u53E3\u8282\u70B9"
+        guid: 402f3416-c88c-41c5-b8a1-a44a9f00a144
+        position: {x: 578, y: 50}
+        viewType: com.zeroerror.behaviortree.EditorTool.EntryNodeView, Assembly-CSharp,
+          Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    - rid: 5371023621774901249
+      type: {class: LogActionNodeData, ns: com.zeroerror.behaviortree.Sample, asm: Assembly-CSharp}
+      data:
+        nodeName: "\u65E5\u5FD7\u8282\u70B9"
+        guid: e5e93a13-0ce3-49b2-a06b-c017ecad3ce9
+        position: {x: 417, y: 637}
+        viewType: com.zeroerror.behaviortree.Sample.EditorTool.LogActionNodeView,
+          Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+        message: "\u95F4\u96942\u79D2"
+    - rid: 5371023621774901250
+      type: {class: DelayNodeData, ns: com.zeroerror.behaviortree.Runtime, asm: Assembly-CSharp}
+      data:
+        nodeName: "\u5EF6\u8FDF\u65F6\u95F4"
+        guid: 3f8ed238-c9db-46b0-bf18-720c42c5214b
+        position: {x: 400, y: 307}
+        viewType: com.zeroerror.behaviortree.EditorTool.DelayNodeView, Assembly-CSharp,
+          Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+        holdGuid: 
+        delayTime: 3
+    - rid: 5371023621774901251
+      type: {class: EntryNodeData, ns: com.zeroerror.behaviortree.Runtime, asm: Assembly-CSharp}
+      data:
+        nodeName: "\u5165\u53E3\u8282\u70B9"
+        guid: 402f3416-c88c-41c5-b8a1-a44a9f00a144
+        position: {x: 578, y: 50}
+        viewType: com.zeroerror.behaviortree.EditorTool.EntryNodeView, Assembly-CSharp,
+          Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    - rid: 5371023621774901252
+      type: {class: SequenceNodeData, ns: com.zeroerror.behaviortree.Runtime, asm: Assembly-CSharp}
+      data:
+        nodeName: "\u590D\u5408\u8282\u70B9 - \u987A\u5E8F\u6267\u884C"
+        guid: bff8aa12-ff84-46d0-947a-dd93a2d05ee7
+        position: {x: 585, y: 181}
+        viewType: com.zeroerror.behaviortree.EditorTool.SequenceNodeView, Assembly-CSharp,
+          Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+        holdGuids: []
+    - rid: 5371023621774901253
+      type: {class: LogActionNodeData, ns: com.zeroerror.behaviortree.Sample, asm: Assembly-CSharp}
+      data:
+        nodeName: "\u65E5\u5FD7\u8282\u70B9"
+        guid: fc662095-473d-4f6b-a6bf-aa76bb49bd2c
+        position: {x: 721, y: 637}
+        viewType: com.zeroerror.behaviortree.Sample.EditorTool.LogActionNodeView,
+          Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+        message: "\u95F4\u96940.1\u79D2"
+    - rid: 5371023621774901254
+      type: {class: DelayNodeData, ns: com.zeroerror.behaviortree.Runtime, asm: Assembly-CSharp}
+      data:
+        nodeName: "\u5EF6\u8FDF\u65F6\u95F4"
+        guid: 3e89ceba-154a-4ec9-b4f7-dbd2bb619868
+        position: {x: 720, y: 324}
+        viewType: com.zeroerror.behaviortree.EditorTool.DelayNodeView, Assembly-CSharp,
+          Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+        holdGuid: 
+        delayTime: 5

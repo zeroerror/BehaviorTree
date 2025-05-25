@@ -4,7 +4,7 @@ namespace com.zeroerror.behaviortree.Runtime
 {
     public abstract class CompositeNode : Node
     {
-        protected List<Node> holds = new List<Node>();
+        public List<Node> holds { get; private set; } = new List<Node>();
 
         public override void InjectContext(object context)
         {

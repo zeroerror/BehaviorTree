@@ -49,6 +49,7 @@ namespace com.zeroerror.behaviortree.Runtime
             }
 
             if (toStatus == NodeStatus.Success) this._child?.Tick(dt);
+            else this._child?.Reset();
 
             return curStatus;
         }
@@ -66,6 +67,38 @@ namespace com.zeroerror.behaviortree.Runtime
 
         private Node _child;
         public void SetChild(Node child) => this._child = child;
+        public void ForeachChildren(System.Action<Node> action, bool includeSelf = true)
+        {
+            if (action == null) return;
+            if (includeSelf) action(this);
+            if (this is CompositeNode compositeNode)
+            {
+                compositeNode.holds.ForEach((hold) =>
+                {
+                    action(hold);
+                    hold.ForeachChildren(action, false);
+                });
+            }
+            else if (this is DecoratorNode decoratorNode)
+            {
+                if (decoratorNode.hold != null)
+                {
+                    action(decoratorNode.hold);
+                    decoratorNode.hold.ForeachChildren(action, false);
+                }
+            }
+            if (this._child != null)
+            {
+                action(this._child);
+                this._child.ForeachChildren(action, false);
+            }
+        }
+
+        public string guid { get; private set; }
+        public void SetGuid(string guid)
+        {
+            this.guid = guid;
+        }
     }
 }
 
