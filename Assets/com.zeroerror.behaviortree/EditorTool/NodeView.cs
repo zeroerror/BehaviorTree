@@ -12,6 +12,7 @@ namespace com.zeroerror.behaviortree.EditorTool
         public void InjectWindow(BehaviorTreeWindow window) => this.window = window;
         protected virtual Color contentColor => new Color(1, 1, 1, 1); // 内容颜色
         protected virtual Color bgColor => new Color(35, 35, 35, 255) / 255.0f; // 背景颜色
+        protected virtual Texture2D bgTexture => AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/com.zeroerror.behaviortree/EditorTool/Textures/NodeBackground.png");
         protected Rect _rect = new Rect(0, 0, 200, 100);
         public Rect rect => _rect;
         public string title;
@@ -43,7 +44,16 @@ namespace com.zeroerror.behaviortree.EditorTool
             var contentColor = GUI.contentColor;
             GUI.contentColor = this.contentColor;
 
-            EditorGUI.DrawRect(rect, this.bgColor);
+            // 画背景
+            if (bgTexture != null)
+            {
+                GUI.DrawTexture(rect, bgTexture, ScaleMode.StretchToFill);
+            }
+            else
+            {
+                EditorGUI.DrawRect(rect, this.bgColor);
+            }
+
             GUILayout.BeginArea(rect);
             GUILayout.Label(title, EditorStyles.boldLabel);
             _Draw();
